@@ -215,7 +215,64 @@ Resources:
 
 
 Outputs:
-    VPCId:
+    VPC:
       Description: "VPC ID"
       Value: !Ref VPC
+      Export:
+        Name: !Sub "${Environment}-vpc-id"
     
+    VPCPublicRouteTable:
+      Description: "Public Route Table ID"
+      Value: !Ref publicRouteTable
+      Export:
+        Name: !Sub "${Environment}-public-route-table-id"
+
+    VPCPrivateRouteTable1:
+      Description: "Private Route Table 1 ID"
+      Value: !Ref privateRouteTable1
+      Export:
+        Name: !Sub "${Environment}-private-route-table-1-id"
+
+    VPCPrivateRouteTable2:
+      Description: "Private Route Table 2 ID"
+      Value: !Ref privateRouteTable2
+      Export:
+        Name: 
+          Fn::Sub: "${Environment}-private-route-table-2-id"  
+
+    PublicSubnet1:
+      Description: "Public Subnet 1 ID"
+      Value: !Ref publicSubnet1
+      Export:
+        Name: !Sub "${Environment}-public-subnet-1-id"
+
+    PublicSubnet2:
+      Description: "Public Subnet 2 ID"
+      Value: !Ref publicSubnet2
+      Export:
+        Name: !Sub "${Environment}-public-subnet-2-id"  
+
+    PublicSubnets:
+      Description: "List of Public Subnet IDs"
+      Value: !Join [ ",", [ !Ref publicSubnet1, !Ref publicSubnet2 ] ]
+      Export:
+        Name: !Sub "${Environment}-public-subnet-ids"
+
+
+    PrivateSubnet1:
+      Description: "Private Subnet 1 ID"
+      Value: !Ref privateSubnet1
+      Export:
+        Name: !Sub "${Environment}-private-subnet-1-id"
+    
+    PrivateSubnet2:
+      Description: "Private Subnet 2 ID"
+      Value: !Ref privateSubnet2
+      Export:
+        Name: !Sub "${Environment}-private-subnet-2-id" 
+
+    PrivateSubnets:
+      Description: "List of Private Subnet IDs"
+      Value: !Join [ ",", [ !Ref privateSubnet1, !Ref privateSubnet2 ] ]
+      Export:
+        Name: !Sub "${Environment}-private-subnet-ids"
