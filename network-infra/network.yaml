@@ -20,6 +20,19 @@ Resources:
         Tags:
           - Key: Name
             Value:
-              Fn::Sub : "${Environment}-vpc"
+              Fn::Sub : '${Environment}-vpc'
 
-      
+    internetGateway:
+      Type: AWS::EC2::InternetGateway
+      Properties:
+        Tags:
+          - Key: Name
+            Value:
+              Fn::Sub : '${Environment}-internet-gateway'
+    
+    VPCGatewayAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId: !Ref VPC
+        InternetGatewayId: !Ref internetGateway
+        
