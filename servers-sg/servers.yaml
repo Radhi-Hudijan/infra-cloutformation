@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "CloudFormation template for servers and securitygroups infrastructure"
+
+Parameters: 
+   Environment:
+      Type: String
+      Description: "Environment name (e.g., dev, prod)"
+    
+   
+Resources:
+  LBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for load balancer"
+      GroupName: 
+        Fn::Sub: "${Environment}-lb-sg"
+      VpcId: 
+        Fn::ImportValue: 
+          Fn::Sub: "${Environment}-vpc-id"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for application servers"
+      GroupName: 
+        Fn::Sub: "${Environment}-app-sg"
+      VpcId: 
+        Fn::ImportValue: 
+          Fn::Sub: "${Environment}-vpc-id"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: 
+            Ref: LBSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+
+  
