@@ -44,4 +44,131 @@ Resources:
           ToPort: 65535
           CidrIp: 0.0.0.0/0
 
+  AppLunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: 
+        Fn::Sub: "${Environment}-app-launch-template"
+      LaunchTemplateData:
+        ImageId: ami-0c42fad2ea005202d # Amazon Linux 2 AMI (HVM), SSD Volume Type
+        InstanceType: t3.micro
+        SecurityGroupIds:
+          - Ref: AppSecurityGroup
+        UserData:
+          Fn::Base64: 
+            Fn::Sub: |
+              #!/bin/bash
+              sudo yum update -y
+              sudo yum install -y nginx
+              sudo systemctl start nginx
+
+        # IamInstanceProfile:
+        #   Name: !Ref AppInstanceProfile
+
+  # AppInstanceProfile:
+  #   Type: AWS::IAM::InstanceProfile
+  #   Properties:
+  #     Path: "/"
+  #     Roles:
+  #       - Ref: AppInstanceRole
+
+  # AppInstanceRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     RoleName: 
+  #       Fn::Sub: "${Environment}-app-instance-role"
+  #     AssumeRolePolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Effect: "Allow"
+  #           Principal:
+  #             Service: "ec2.amazonaws.com"
+  #           Action: "sts:AssumeRole"
+  #           Policies:
+  #             - policyName : "S3ReadOnlyAccess"
+  #               policyDocument:
+  #                 Version: "2012-10-17"
+  #                 Statement:
+  #                   - Effect: "Allow"
+  #                     Action: "s3:GetObject"
+  #                     Resource: "arn:aws:s3:::my-app-config-bucket/*"
+
+  AppAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: 
+        Fn::Sub: "${Environment}-app-asg"
+      LaunchTemplate:
+        LaunchTemplateId: 
+          Ref: AppLunchTemplate
+        Version: !GetAtt AppLunchTemplate.LatestVersionNumber
+      MinSize: "2"
+      MaxSize: "5"
+      DesiredCapacity: "2"
+      VPCZoneIdentifier:
+        - Fn::ImportValue: 
+            Fn::Sub: "${Environment}-private-subnet-ids"
+      TargetGroupARNs:
+        - Ref: AppTargetGroup
+
+
+  webAppLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: 
+        Fn::Sub: "${Environment}-webapp-lb"
+      Subnets:
+        - Fn::ImportValue: 
+            Fn::Sub: "${Environment}-public-subnet-1-id"
+        - Fn::ImportValue: 
+            Fn::Sub: "${Environment}-public-subnet-2-id"
+      SecurityGroups:
+        - Ref: LBSecurityGroup
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: 
+        Ref: webAppLB
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: 
+            Ref: AppTargetGroup
+      
+  ALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: 
+        Ref: ALBListener
+      Priority: 1
+      Conditions:
+        - Field: path-pattern
+          Values: 
+            - "/*"
+      Actions:
+        - Type: forward
+          TargetGroupArn: 
+            Ref: AppTargetGroup
+        
+  
+      
+  AppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: 
+        Fn::Sub: "${Environment}-app-tg"
+      Port: 80
+      Protocol: HTTP
+      VpcId: 
+        Fn::ImportValue: 
+          Fn::Sub: "${Environment}-vpc-id"
+      HealthCheckPath: "/"
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2  
+      UnhealthyThresholdCount: 2
+      
+
   
