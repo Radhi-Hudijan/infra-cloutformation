@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "dev"
+    },
+    {
+        "ParameterKey": "DDMasterUsername",
+        "ParameterValue": "admin"
+    },
+    {
+        "ParameterKey": "DDMasterUserPassword",
+        "ParameterValue": "Admin12345"
+    }
+]

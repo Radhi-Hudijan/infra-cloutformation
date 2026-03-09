@@ -1,2 +1,81 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "CloudFormation template for RDS infrastructure"
+
+Parameters:
+  Environment:
+    Type: String
+    Description: "The environment for the RDS instance (e.g., dev, prod)"
+    Default: "dev"
+  DDMasterUsername:
+    Type: String
+    Description: "The master username for the RDS instance"
+    Default: "admin"
+  DDMasterUserPassword:
+    Type: String
+    Description: "The master user password for the RDS instance"
+    NoEcho: true  # This will prevent the password from being displayed in the CloudFormation console
+
+
+Resources:
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for RDS instance"
+      VpcId: 
+        Fn::ImportValue: 
+          Fn::Sub: "${Environment}-vpc-id"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 10.0.3.0/24  # Adjust this CIDR block to match your VPC's private subnet range
+
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 10.0.3.0/24  # Adjust this CIDR block to match your VPC's private subnet range
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Subnet group for RDS instance"
+      DBSubnetGroupName: 
+        Fn::Sub: "${Environment}-db-subnet-group"
+      SubnetIds: !Split 
+        - ","
+        - Fn::ImportValue: 
+            Fn::Sub: "${Environment}-private-subnet-ids"
+
+  DBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: "Custom parameter group for RDS instance"
+      ParameterGroupName: 
+        Fn::Sub: "${Environment}-db-parameter-group"
+      Family: "postgres12"  # Adjust this to match your desired database engine and version
+      Parameters:
+        synchronous_commit: "off"  # Example parameter, adjust as needed
+        rds.force_ssl: "1"  # Example parameter, adjust as needed
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: "Snapshot"
+    UpdateReplacePolicy: "Snapshot"
+    Properties:
+      DBName: 
+        Fn::Sub: "${Environment}DB"
+      AllocatedStorage: "20"
+      BackupRetentionPeriod: 7
+      DBInstanceClass: "db.t3.micro"
+      Engine: "postgres"
+      EngineVersion: "17.6"
+      MasterUsername: !Ref DDMasterUsername
+      MasterUserPassword: !Ref DDMasterUserPassword
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
+      MultiAZ: false
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      
