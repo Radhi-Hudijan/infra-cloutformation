@@ -12,7 +12,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: 
-        Fn::Sub: "${Environment}-my-s3-bucket-22994403"
+        Fn::Sub: "${Environment}-my-s3-bucket-229944035544"
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled

@@ -3,7 +3,7 @@ set -e # Exit immediately if a command exits with a non-zero status
 
 if [ "$#" -ne 4 ]; then 
     echo "Usage: $0 <action> <stack-name> <template-file> <parameters-file>"
-    echo "Actions: create, update, delete , deploy"
+    echo "Actions: create, update, delete , deploy , Review"
     exit 1
 fi 
 
@@ -38,9 +38,15 @@ case $ACTION in
             --capabilities CAPABILITY_NAMED_IAM\
             --region eu-central-1
         ;;
+    Review)
+        aws cloudformation deploy --stack-name $STACK_NAME \
+            --template-file $TEMPLATE_FILE \
+            --region eu-central-1 \
+            --no-execute-changeset
+        ;;
     *)
         echo "Invalid action: $ACTION"
-        echo "Actions: create, update, delete , deploy"
+        echo "Actions: create, update, delete , deploy , Review"
         exit 1
         ;;
 esac
