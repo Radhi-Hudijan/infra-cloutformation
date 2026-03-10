@@ -59,7 +59,7 @@ Resources:
 
   RDSInstance:
     Type: AWS::RDS::DBInstance
-    DeletionPolicy: "Snapshot"
+    DeletionPolicy: "Snapshot"  
     UpdateReplacePolicy: "Snapshot"
     Properties:
       DBName: 
