@@ -50,9 +50,9 @@ Resources:
     Type: AWS::RDS::DBParameterGroup
     Properties:
       Description: "Custom parameter group for RDS instance"
-      ParameterGroupName: 
+      DBParameterGroupName: 
         Fn::Sub: "${Environment}-db-parameter-group"
-      Family: "postgres12"  # Adjust this to match your desired database engine and version
+      Family: "postgres17"  # Adjust this to match your desired database engine and version
       Parameters:
         synchronous_commit: "off"  # Example parameter, adjust as needed
         rds.force_ssl: "1"  # Example parameter, adjust as needed
@@ -67,6 +67,8 @@ Resources:
       AllocatedStorage: "20"
       BackupRetentionPeriod: 7
       DBInstanceClass: "db.t3.micro"
+      DBInstanceIdentifier: 
+        Fn::Sub: "${Environment}-rds-instance"
       Engine: "postgres"
       EngineVersion: "17.6"
       MasterUsername: !Ref DDMasterUsername

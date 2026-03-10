@@ -5,10 +5,10 @@
     },
     {
         "ParameterKey": "DDMasterUsername",
-        "ParameterValue": "admin"
+        "ParameterValue": "radhitestdb2025"
     },
     {
         "ParameterKey": "DDMasterUserPassword",
-        "ParameterValue": "Admin12345"
+        "ParameterValue": "radhitestdb2025"
     }
 ]
